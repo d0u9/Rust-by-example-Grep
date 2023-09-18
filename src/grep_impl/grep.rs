@@ -21,11 +21,8 @@ pub fn grep_from_file(file: &str, needle: &str) -> Result<Vec<String>, AppErr> {
 
 fn grep_from_file_by_greper(file: &str, greper: &dyn Greper) -> Result<Vec<String>, AppErr> {
     println!("==>> Using {}", greper.name());
-    // Read file, and return error if `open()` failed
-    let file = match File::open(file) {
-        Ok(file) => file,
-        Err(e) => return Err(AppErr { msg: e.to_string() }),
-    };
+
+    let file = File::open(file)?;
 
     let mut matched_lines = Vec::new();
 
@@ -35,10 +32,7 @@ fn grep_from_file_by_greper(file: &str, greper: &dyn Greper) -> Result<Vec<Strin
     // Iterate over whole file line by line
     for line in reader.lines() {
         // read.lines() iterates over each line, and return Result<String, Error>
-        let line = match line {
-            Ok(line) => line,
-            Err(e) => return Err(AppErr { msg: e.to_string() }),
-        };
+        let line = line?;
 
         if greper.grep(&line) {
             matched_lines.push(line);
