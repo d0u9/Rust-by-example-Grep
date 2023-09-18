@@ -1,6 +1,6 @@
 use crate::err::AppErr;
+use crate::grep_impl::regex_greper::*;
 
-use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -12,9 +12,7 @@ pub fn grep_from_file(file: &str, needle: &str) -> Result<Vec<String>, AppErr> {
     };
 
     let mut matched_lines = Vec::new();
-    let Ok(needle) = Regex::new(needle) else {
-        return Err(AppErr { msg: "cannot create regex".to_string(), });
-    };
+    let greper = RegexGreper::new(needle)?;
 
     // Create a BufReader for our file
     let reader = BufReader::new(file);
@@ -27,7 +25,7 @@ pub fn grep_from_file(file: &str, needle: &str) -> Result<Vec<String>, AppErr> {
             Err(e) => return Err(AppErr { msg: e.to_string() }),
         };
 
-        if needle.captures(&line).is_some() {
+        if greper.grep(&line) {
             matched_lines.push(line);
         }
     }
