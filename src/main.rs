@@ -1,20 +1,29 @@
-fn main() {
-    version_manipulation();
+#[derive(Debug)]
+struct AppErr {
+    msg: String,
 }
 
-fn version_manipulation() {
+fn main() {
+    version_manipulation().unwrap();
+}
+
+fn version_manipulation() -> Result<(), AppErr> {
     let is_dev = true;
     let version = String::from("5.16");
     let suffix = "-dev";
 
     if version.find('.').is_none() {
-        println!("invalid version number");
-        return;
+        return Err(AppErr {
+            msg: "invalid version number".to_string(),
+        });
     }
 
-    version_verify_and_compare(&version).unwrap();
+    // Use ? to Propagate the error
+    version_verify_and_compare(&version)?;
 
     print_version(version, suffix, is_dev);
+
+    Ok(())
 }
 
 fn print_version(mut version: String, suffix: &str, is_dev: bool) {
@@ -24,10 +33,10 @@ fn print_version(mut version: String, suffix: &str, is_dev: bool) {
     println!("version: {}", version);
 }
 
-fn version_verify_and_compare(version: &str) -> Result<(), std::num::ParseFloatError> {
+fn version_verify_and_compare(version: &str) -> Result<(), AppErr> {
     let version_f64 = match version.parse::<f64>() {
         Ok(v) => v,
-        Err(e) => return Err(e),
+        Err(e) => return Err(AppErr { msg: e.to_string() }),
     };
 
     if version_f64 > 5.0 {
