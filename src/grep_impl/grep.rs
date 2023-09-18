@@ -8,19 +8,18 @@ use std::fs::File;
 use std::io::{BufRead, BufReader};
 
 pub fn grep_from_file(file: &str, needle: &str) -> Result<Vec<String>, AppErr> {
-    match env::var("BACKEND") {
+    let greper: Box<dyn Greper> = match env::var("BACKEND") {
         Ok(backend) => match backend.to_ascii_lowercase().as_ref() {
-            "regex" => grep_from_file_by_greper(file, RegexGreper::new(needle)?),
-            _ => grep_from_file_by_greper(file, FindGreper::new(needle)?),
+            "regex" => Box::new(RegexGreper::new(needle)?),
+            _ => Box::new(FindGreper::new(needle)?),
         },
-        Err(_) => grep_from_file_by_greper(file, RegexGreper::new(needle)?),
-    }
+        Err(_) => Box::new(FindGreper::new(needle)?),
+    };
+
+    grep_from_file_by_greper(file, &*greper)
 }
 
-fn grep_from_file_by_greper<G>(file: &str, greper: G) -> Result<Vec<String>, AppErr>
-where
-    G: Greper,
-{
+fn grep_from_file_by_greper(file: &str, greper: &dyn Greper) -> Result<Vec<String>, AppErr> {
     println!("==>> Using {}", greper.name());
     // Read file, and return error if `open()` failed
     let file = match File::open(file) {
