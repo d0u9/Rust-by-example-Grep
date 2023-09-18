@@ -1,4 +1,5 @@
 use crate::err::AppErr;
+use crate::grep_impl::interface::*;
 
 use regex::Regex;
 
@@ -14,8 +15,14 @@ impl RegexGreper {
 
         Ok(Self { regex })
     }
+}
 
-    pub fn grep(&self, line: &str) -> bool {
+impl Greper for RegexGreper {
+    fn grep(&self, line: &str) -> bool {
         self.regex.captures(line).is_some()
+    }
+
+    fn name(&self) -> &str {
+        "Regex Greper: Grep Backed based on Regex Crate"
     }
 }

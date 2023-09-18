@@ -1,4 +1,6 @@
 use crate::err::AppErr;
+use crate::grep_impl::find_greper::*;
+use crate::grep_impl::interface::*;
 use crate::grep_impl::regex_greper::*;
 
 use std::fs::File;
@@ -12,7 +14,12 @@ pub fn grep_from_file(file: &str, needle: &str) -> Result<Vec<String>, AppErr> {
     };
 
     let mut matched_lines = Vec::new();
+
+    // Use either one you prefer
     let greper = RegexGreper::new(needle)?;
+    let greper = FindGreper::new(needle)?;
+
+    println!("===>>> Using {}", greper.name());
 
     // Create a BufReader for our file
     let reader = BufReader::new(file);
