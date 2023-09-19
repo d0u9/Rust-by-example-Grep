@@ -24,20 +24,11 @@ fn grep_from_file_by_greper(file: &str, greper: &dyn Greper) -> Result<Vec<Strin
 
     let file = File::open(file)?;
 
-    let mut matched_lines = Vec::new();
-
-    // Create a BufReader for our file
-    let reader = BufReader::new(file);
-
-    // Iterate over whole file line by line
-    for line in reader.lines() {
-        // read.lines() iterates over each line, and return Result<String, Error>
-        let line = line?;
-
-        if greper.grep(&line) {
-            matched_lines.push(line);
-        }
-    }
+    let matched_lines = BufReader::new(file)
+        .lines()
+        .map_while(Result::ok)
+        .filter(|line| greper.grep(line))
+        .collect::<Vec<_>>();
 
     Ok(matched_lines)
 }
